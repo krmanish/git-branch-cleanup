@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+# Pass git Directory as first argument
+# Get all git branch using command
+# And iterate over all the branches and perform the operation
+# Delete wont be applied if branch is not fully merged to master
+
+# Should be called from another script else return
+if [[ "${#BASH_SOURCE[@]}" -lt "2" ]]; then
+    return 0
+fi
+
+is_valid() {
+    local git_bnc=$1
+    for pre in $FEATURE_BRANCH_PREFIX; do
+        if [[ $git_bnc = "$pre"* ]]; then
+            echo true
+            return 0
+        fi
+    done
+    echo false
+}
+
+branches=$(git branch --list|sed 's/\*//g')
+for bnc in $branches; do
+    is_allowed=$(is_valid $bnc)
+    if [ "$is_allowed" = true ]; then 
+        cur_dt=$(date '+%Y-%m-%d %H:%M:%S')
+        message="$message\n\t---* For Branch: $bnc *---"
+
+        add_tag=$(git tag archive/${bnc} 2>&1)
+        if [ $? -ne 0 ]; then
+            message="$message\n\tTAG archive/$bnc Already Exists."
+        else
+            message="$message\n\tBranch archived: archive/$bnc"
+        fi
+
+        del_brn=$(git branch -d $bnc 2>&1) 
+        if [ $? -eq 0 ]; then
+            git_rem_del=$(git push origin --delete $bnc 2>&1)
+            message="$message\n\tBRANCH Deleted successfully."
+        else
+            message="$message\n\tBRANCH Delete Failed."
+            message="$message\n\t\t$del_brn"
+
+            rm_tag=$(git tag -d archive/$bnc 2>&1)
+            if [ $? -eq 0 ]; then
+                message="$message\n\tTAG Removed archive/$bnc"
+            fi
+        fi
+    fi
+done

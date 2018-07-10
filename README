@@ -1,0 +1,19 @@
+"""""""""""
+Script to clean git repository
+Description:
+    Remove the merged branch from local as well as from remote server/github
+    before archiving them locally so that you can get them whenever you want in future
+"""""""""""
+
+Update the config.conf file to mention the branch name prefix......
+    Branch must be same as Jira ticket id which should be created as <PROJECT_NAME>-
+
+Assumption:
+    User must have correct permission to github repo
+
+Log File:
+    git-branch-cleanup
+
+Usage:
+    Get the package in your favorite location and run the code as followed
+    ./main.sh <COMPELETE-PATH-TO-GIT-REPO>
